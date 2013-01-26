@@ -3,12 +3,13 @@ package poo.scv;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class Pedido {
 
 	private String data;
 	private Cliente cliente;
-	private static Integer codigoPedido;
+	private Integer codigoPedido ;
 	private ArrayList<ItemPedido> listaItens = new ArrayList<ItemPedido>();
 	private HashMap<Produto, ItemPedido> mapitens = new HashMap<Produto, ItemPedido>();	
 	
@@ -33,8 +34,12 @@ public class Pedido {
 		return valorTotal;
 	}
 	
-	public ArrayList<ItemPedido> listarItensPedido() {
-		return listaItens;
+	public void setListaItens(ArrayList<ItemPedido> itenspedido) {
+		listaItens = itenspedido;
+	}
+	
+	public Iterator<ItemPedido> listarItensPedido() {
+		return listaItens.iterator();
 	}
 
 	public Cliente getCliente() {
@@ -51,5 +56,13 @@ public class Pedido {
 
 	public void setData(String data) {
 		this.data = data;
+	}
+
+	public void setCodigo(int codigo) {
+		this.codigoPedido = codigo;
+	}
+	
+	public Integer getCodigo() {
+		return codigoPedido;
 	}
 }

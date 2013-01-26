@@ -14,10 +14,8 @@ public class ControleDeVendas {
 	Set<Produto> produtos = new HashSet<Produto>();
 	ArrayList<Pedido> pedidos = new ArrayList<Pedido>();
 	
-	public Pedido novoPedido(Cliente cliente, String data) {
-		Pedido pedido = new Pedido();
-		pedido.setCliente(cliente);
-		pedido.setData(data);
+	public Pedido novoPedido(Pedido pedido) {
+		pedidos.add(pedido);
 		return pedido;
 	}
 	
@@ -62,6 +60,18 @@ public class ControleDeVendas {
 			}
 		}
 		return null;
+	}
+	
+	public Set<Cliente> getClientes() {
+		return clientes;
+	}
+
+	public Set<Produto> getProdutos() {
+		return produtos;
+	}
+	
+	public ArrayList<Pedido> getPedidos() {
+		return pedidos;
 	}
 	
 }

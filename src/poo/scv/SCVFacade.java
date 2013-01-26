@@ -2,6 +2,7 @@ package poo.scv;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -10,14 +11,18 @@ import poo.scv.io.SCVPersistenciaMemoria;
 
 public class SCVFacade {
 	
+	private static int uPedido = 0;
+	
 	static SCVPersistencia persistencia = new SCVPersistenciaMemoria();
+	
+	static ControleDeVendas cVendas = new ControleDeVendas();
 	
 	public Cliente criarCliente(String nome, String cpf, String telefone) throws SCVException {
 		Cliente nCliente = new Cliente();
 		nCliente.setNome(nome);
 		nCliente.setCpf(cpf);
 		nCliente.setTelefone(telefone);
-		persistencia.salvar(nCliente);
+		cVendas.addCliente(nCliente);
 		return nCliente;
 	}
 
@@ -27,7 +32,7 @@ public class SCVFacade {
 		nProduto.setNome(nome);
 		nProduto.setDescricao(descricao);
 		nProduto.setPreco(preco);
-		persistencia.salvar(nProduto);
+		cVendas.addProduto(nProduto);
 		return nProduto;
 	}
 
@@ -48,10 +53,14 @@ public class SCVFacade {
 		return iPedido;
 	}
 	
-	public Pedido criarPedido(String data, Cliente cliente) {
+	public Pedido criarPedido(String data, Cliente cliente, ArrayList<ItemPedido> itenspedido) {
 		Pedido nPedido = new Pedido();
 		nPedido.setData(data);
 		nPedido.setCliente(cliente);
+		nPedido.setListaItens(itenspedido);
+		nPedido.setCodigo(uPedido);
+		uPedido++;
+		cVendas.novoPedido(nPedido);
 		return nPedido;
 	}
 	
@@ -61,15 +70,43 @@ public class SCVFacade {
 		return (format.format(data));
 	}
 	
+	public Cliente verificarCPF(String cpf) {
+		ArrayList<Cliente> listaClientes = persistencia.recuperarClientes();
+		for (int i = 0; i < listaClientes.size(); i++) {
+			if (listaClientes.get(i).getCpf().equals(cpf)) {
+				return listaClientes.get(i);
+			}
+		}
+		return null;
+	}
+	
+	public Produto verificarProduto(int codigo) {
+		ArrayList<Produto> listaProdutos = persistencia.recuperarProdutos();
+		for (int i = 0; i < listaProdutos.size(); i++) {
+			if (listaProdutos.get(i).getCodigo().equals(codigo)) {
+				return listaProdutos.get(i);
+			}
+		}
+		return null;
+	}
+
 	public Iterator<Produto> getProdutosIterator() {
-		return persistencia.recuperarProdutos().iterator();
+//		return persistencia.recuperarProdutos().iterator();
+		return cVendas.getProdutos().iterator();
 	}
 
 	public Iterator<Cliente> getClientesIterator() {
-		return persistencia.recuperarClientes().iterator();
+//  	return persistencia.recuperarClientes().iterator();
+		return cVendas.getClientes().iterator();
 	}
 
 	public Iterator<ItemPedido> getItemPedidosIterator() {
 		return persistencia.recuperarItemPedidos().iterator();
 	}	
+
+	public Iterator<Pedido> getPedidosIterator() {
+//		return persistencia.recuperarPedidos().iterator();
+		return cVendas.getPedidos().iterator();
+	}	
+	
 }

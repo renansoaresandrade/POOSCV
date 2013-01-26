@@ -2,6 +2,7 @@ package poo.scv.ui;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -10,6 +11,7 @@ import javax.swing.JOptionPane;
 
 import poo.scv.Cliente;
 import poo.scv.ItemPedido;
+import poo.scv.Pedido;
 import poo.scv.Produto;
 import poo.scv.SCVException;
 import poo.scv.SCVFacade;
@@ -24,13 +26,16 @@ public class SCV {
 	}
 	
 	public static void exibirMenu() {
-		String o = JOptionPane.showInputDialog("Bem vindo ao sistema de Gerenciamento de Vendas!\nEscolha a opção desejada:\n1-Cadastrar Produto\n2-Listar Produtos\n3-Cadastrar Clientes\n4-Listar Clientes\n5-Criar Item de Pedido\n6-Listar Itens de Pedido\n0-Sair","Sua opção");		
+		String o = JOptionPane.showInputDialog("Bem vindo ao sistema de Gerenciamento de Vendas!\nEscolha a opção desejada:\n1-Cadastrar Produto\n2-Listar Produtos\n3-Cadastrar Clientes\n4-Listar Clientes\n5-Criar Pedido\n6-Listar Pedidos\n0-Sair","Sua opção");		
 		lerEntradaUsuario(o);
 	}
 
 	private static void lerEntradaUsuario(String o) {
 		int nOpcao = Integer.parseInt(o);
 		switch (nOpcao) {
+			case 0:
+				System.exit(0);
+				break;
 			case 1:
 				int codigo = Integer.parseInt(JOptionPane.showInputDialog("Código do Produto:"));
 				String nome = JOptionPane.showInputDialog("Nome do produto:");
@@ -84,40 +89,52 @@ public class SCV {
 				String clientes = "";
 				while (c1.hasNext()) {
 					Cliente c2 = c1.next();
-					clientes +=  "[ Nome: " + c2.getNome() + " || Telefone: " + c2.getTelefone() + " || CPF: " + c2.getTelefone() + " ] " + "\n";
+					clientes +=  "[ Nome: " + c2.getNome() + " || Telefone: " + c2.getTelefone() + " || CPF: " + c2.getCpf() + " ] " + "\n";
 				}
 				JOptionPane.showMessageDialog(null, clientes);
 				exibirMenu();
 				break;
 			case 5:
-				Iterator<Produto> i1;
+				String cpfcliente = JOptionPane.showInputDialog("Digite o CPF do Cliente:");
+				Cliente cliente;
+				while ((cliente = facade.verificarCPF(cpfcliente)) == null) {
+					JOptionPane.showMessageDialog(null, "CPF inválido, tente novamente!");
+					cpfcliente = JOptionPane.showInputDialog("Digite o CPF do cliente:");
+				}
 				int idProduto = Integer.parseInt(JOptionPane.showInputDialog("Digite o código do produto: "));
-				i1 = facade.getProdutosIterator();
+				Iterator<Produto> i1 = facade.getProdutosIterator();
 				int i = 0;
-				while (i1.hasNext()) {
-					Produto p2 = i1.next();
-					if (p2.getCodigo() == idProduto) {
-						i = 1;
-						int idQuantidade = Integer.parseInt(JOptionPane.showInputDialog("Digite a quantidade do produto: "));
-						facade.criarItemPedido(p2, idQuantidade);
-						JOptionPane.showMessageDialog(null, "Item de Pedido adicionado com sucesso!");
-						break;
+				ArrayList<ItemPedido> itenspedido = new ArrayList<ItemPedido>();
+				while (idProduto != 0) {
+					Produto vProduto;
+					while ((vProduto = facade.verificarProduto(idProduto)) == null) {
+						JOptionPane.showMessageDialog(null, "Produto inválido, tente novamente!");
+						cpfcliente = JOptionPane.showInputDialog("Digite o número do produto:");						
 					}
+					int quantidade = Integer.parseInt(JOptionPane.showInputDialog("Digite a quantidade do produto: "));
+					ItemPedido iPedido = facade.criarItemPedido(vProduto, quantidade);
+					itenspedido.add(iPedido);
+					JOptionPane.showMessageDialog(null, "Item de pedido Pedido adicionado com sucesso!");
+					idProduto = Integer.parseInt(JOptionPane.showInputDialog("Digite o número do produto: \nUse 0 para encerrar"));
 				}
-				if (i == 0) {
-					JOptionPane.showMessageDialog(null, "Não há produtos com o código digitado.");
-				}
+				facade.criarPedido(facade.pegarData(), cliente, itenspedido);
 				exibirMenu();
 				break;
 			case 6:
-				Iterator<ItemPedido> ip1;
-				ip1 = facade.getItemPedidosIterator();
-				String itempedidos = "";
-				while (ip1.hasNext()) {
-					ItemPedido ip2 = ip1.next();
-					itempedidos +=  "[ Nome do produto: " + ip2.getProduto().getNome() + " || Quantidade: " + ip2.getQuantidade() + " ] " + "\n";
+				Iterator<Pedido> pe1;
+				pe1 = facade.getPedidosIterator();
+				String pedidos = "";
+				while (pe1.hasNext()) {
+					Pedido p2 = pe1.next();
+					Iterator<ItemPedido> ip = p2.listarItensPedido();
+					String listaProdutos = "";
+					while (ip.hasNext()) {
+						ItemPedido ip2 = ip.next();
+						listaProdutos += "Nome produto: " + ip2.getProduto().getNome() + " Quantidade: " + ip2.getQuantidade() + "\n";
+					}
+					pedidos +=  "Número pedido : " + p2.getCodigo() + "\nData : " + p2.getData() + "\nCliente: " + p2.getCliente().getNome()  + "\n" + listaProdutos;
 				}
-				JOptionPane.showMessageDialog(null, itempedidos);
+				JOptionPane.showMessageDialog(null, pedidos);
 				exibirMenu();
 				break;
 		}
